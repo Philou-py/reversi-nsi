@@ -1,5 +1,5 @@
 from os import system, name as os_name
-from colorama import init, Back
+from colorama import init, Back, Fore
 
 init()
 
@@ -10,16 +10,19 @@ def clear_screen():
     system(CLEAR_CMD)
 
 def print_game(game, possible_moves = []):
-    print("   A   B   C   D   E   F   G   H")
+    print(Fore.YELLOW + "   A   B   C   D   E   F   G   H" + Fore.RESET)
     counter = 1
     for row_index in range(8):
-        print(counter, end = "  ")
+        print(Fore.YELLOW + str(counter) + Fore.RESET, end = "  ")
         counter += 1
         for col_index in range(8):
+            square = game[row_index][col_index]
             is_possible = (row_index, col_index) in possible_moves
-            color = Back.BLUE if is_possible else ""
-            color_reset = Back.RESET if is_possible else ""
-            print(color + game[row_index][col_index] + color_reset, end = "   ")
+            color = Fore.LIGHTYELLOW_EX if is_possible else ""
+            color_reset = Fore.RESET if is_possible else ""
+            player_color = Fore.MAGENTA if square == "O" else (Fore.RED if square == "X" else Fore.CYAN)
+            player_color_reset = Fore.RESET
+            print(player_color + color + square + color_reset + player_color_reset, end = "   ")
         print("\n")
 
 def get_input(possible_moves):
@@ -83,7 +86,7 @@ def get_possible_moves(player_symbol, game):
 def update_board(coords, player_symbol, game):
     if game[coords[0]][coords[1]] == "-": # Make sure that the square is empty
         for direction in DIRECTIONS:
-            nb_squares = [count_surrounding_squares(player_symbol, coords, direction, game) for _ in range(50000)][0]
+            nb_squares = count_surrounding_squares(player_symbol, coords, direction, game)
             if nb_squares > 0:
                 game[coords[0]][coords[1]] = player_symbol
                 pointer = update_coords(coords, direction)
@@ -119,7 +122,8 @@ while not game_over:
         if len(possible_moves) == 0:
             current_player = get_other_player(current_player)
             continue
-        print(f"Au joueur {current_player} de jouer !\n")
+        print(f"Au joueur {current_player} de jouer !")
+        print(f"Joueur O : {nb_pieces['O']} pions ; joueur X : {nb_pieces['X']} pions\n")
         print_game(game, possible_moves)
         update_board(get_input(possible_moves), current_player, game)
         current_player = get_other_player(current_player)
