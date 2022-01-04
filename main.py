@@ -118,7 +118,7 @@ def get_input(possible_moves: list[CoordsType] = None) -> CoordsType:
           square on the board
     """
     # Get user input and ignore letter case
-    square_coords: str = input("Où souhaitez-vous poser un pion ? ").upper()
+    square_coords: str = input(Fore.GREEN + "Où souhaitez-vous poser un pion ? " + Fore.RESET).upper()
 
     # Keep re-asking for the coordinates while they are not given in the correct format
     while not (len(square_coords) == 2 and
@@ -126,15 +126,15 @@ def get_input(possible_moves: list[CoordsType] = None) -> CoordsType:
                "A" <= square_coords[0] <= "H" and
                square_coords[1].isdigit() and
                1 <= int(square_coords[1]) <= 8):
-        square_coords = input(
-            "Entrez les coordonnées de la case (exemple: A4) : ").upper()
+        square_coords = input(Fore.LIGHTBLUE_EX +
+            "Entrez les coordonnées de la case (exemple: A4) : " + Fore.RESET).upper()
 
     # Once in the desired format, parse the input string to actual coordinates
     coords: CoordsType = (int(square_coords[1]) - 1, ord(square_coords[0]) - ord("A"))
 
     # If the square is not a possible move, then call this function again
     if possible_moves and coords not in possible_moves:
-        print("Vous ne pouvez pas placer un pion sur cette case !")
+        print(Fore.RED + "Vous ne pouvez pas placer un pion sur cette case !" + Fore.RESET)
         return get_input(possible_moves)
 
     return coords
@@ -582,7 +582,32 @@ if __name__ == "__main__":
     # game[4][4] = "X"
     # game[2][4] = "X"
 
-    print("Bienvenue au jeu du Reversi !")
+    clear_screen()
+
+    print(Fore.RED + "Bienvenue au jeu du Reversi !" + Fore.RESET)
+
+    print(Fore.YELLOW,
+    """
+Voici les règles du jeu :
+
+Chaque joueur dispose de pions marqués soit d'un O, soit d'un X qu'il peut placer,
+à chaque tour, sur l'une des 64 cases du plateau de jeu. A son tour de jeu, le joueur
+doit poser un pion de sa couleur sur une case vide, adjacente à un pion adverse
+(prenant en compte les directions horizontale, verticale et diagonale) et tel qu'il retourne
+au moins un pion adverse en les encadrant dans l'une ou plusieurs des directions.
+
+La partie se termine lorsqu'aucun joueur ne peut plus poser de pion qui causerait un retournement,
+ce qui arrive le plus souvent lorsque les 64 cases sont remplies, mais ce qui peut également
+se produire lorsque l'un des joueurs ne possède plus de pion sur le plateau.
+
+Le joueur gagnant est celui qui possède le plus de pions de sa couleur sur le plateau à la fin de la partie.
+
+Sur le plateau de jeu, les cases vides sont symbolisées par un tiret bleu. Si cette case représente
+une possibilité de jeu pour le joueur actif, celle-ci est de couleur jaune clair / blanc. Les cases
+possédant un fond violet ou rouge indiquent la case dans laquelle le joueur précédent a placé un pion.
+    """, Fore.RESET)
+
+    print(Fore.CYAN)
 
     # Make the user choose the game mode
     against_ai_input: str = input("Souhaitez-vous jouer contre l'ordinateur ? (oui/non) ").lower()
@@ -594,9 +619,14 @@ if __name__ == "__main__":
     against_ai: bool = against_ai_input == "oui"
 
     if against_ai:
-        print("Compris ! Vous utiliserez les pions marqués avec un 'O', et l'ordinateur 'X'.\nBon jeu !")
+        print("Compris ! Vous utiliserez les pions marqués avec un 'O', et l'ordinateur 'X'.")
     else:
-        print("Compris ! Le joueur 1 utilisera les pions marqués avec un 'O' et le joueur 2 aura ceux avec un 'X'.\nBon jeu !")
+        print("Compris ! Le joueur 1 utilisera les pions marqués avec un 'O' et le joueur 2 aura ceux avec un 'X'.")
+
+    print(Fore.RESET)
+    print(Fore.RED + "Bon jeu !" + Fore.RESET)
+
+    input("\nAppuyez sur la touche Entrée pour commencer le jeu ! ")
 
     # Keep track of the current player
     current_player: PlayerSymbolType = "O"
@@ -644,11 +674,11 @@ if __name__ == "__main__":
         # Don't show messages if it is the computer's turn
         if not (against_ai and current_player == "X"):
             # Show the user whose turn it is
-            print(f"Au joueur {current_player} de jouer !")
+            print(Fore.LIGHTGREEN_EX + f"Au joueur {current_player} de jouer !" + Fore.RESET)
 
             # Statistics about the number of pieces and the total number of pieces
-            print(
-                f"Joueur O : {nb_pieces['O']} pions ; joueur X : {nb_pieces['X']} pions\n")
+            print(Fore.LIGHTBLUE_EX + 
+                f"Joueur O : {nb_pieces['O']} pions ; joueur X : {nb_pieces['X']} pions\n" + Fore.RESET)
 
             # Show the board by passing the possible moves of the current player
             print_game(possible_moves, last_move)
