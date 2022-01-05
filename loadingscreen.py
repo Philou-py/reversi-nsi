@@ -24,4 +24,3 @@ Screen.wrapper(demo)
 #                FigletText("made by diego", font="Graceful"),
 #                int(screen.height / 2 + 3),
 #                3)
-
