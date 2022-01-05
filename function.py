@@ -128,4 +128,3 @@ def renderer(player, possibleMoves, cellNumb):
 
 def clearScreen():
     system('cls' if os_name == 'nt' else 'clear')
-
