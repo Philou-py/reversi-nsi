@@ -3,7 +3,6 @@ from os import system, name as os_name
 from typing import Literal
 
 init()
-
 board = [[0,0,0,0,0,0,0,0],
          [0,0,0,0,0,0,0,0],
          [0,0,0,0,0,0,0,0],
@@ -22,7 +21,7 @@ def indexFinder(char):
         if char == column[i]:
             return i+1
 
-def getInput():
+def getInput(player):
     rowInput = input("Enter the coordinates : ").upper()       
     while not (len(rowInput) == 2 and
         rowInput[0].isalpha() and
@@ -30,15 +29,16 @@ def getInput():
         rowInput[1].isdigit() and
         1 <= int(rowInput[1]) <= 8):
         rowInput = input("Enter the coordinates (exemple: B3) : ").upper()
-    coords = (int(rowInput[1]) - 1, ord(rowInput[0]) - ord("A"))
+    coords = (ord(rowInput[0]) - ord("A"), int(rowInput[1]) - 1)
     return coords
 
 def cellCount():
-    count = {1:0, 2:0}
+    count = {1:0, 2:0, "total":0}
     for row in board:
         for cell in row:
             if cell != 0:
                 count[cell]+=1
+                count["total"]+=1
     return count
 
 
@@ -59,12 +59,12 @@ def countSurroundingCell(player, coords, direction):
     if (cell == 0 or cell == player) and canUseMov(coords, direction):
         pointer = nextCoords(coords, direction)
         cellNumb = 0
-        while board[pointer[1]][pointer[0]] == getOtherPlayer(player):
+        while board[pointer[0]][pointer[1]] == getOtherPlayer(player):
             cellNumb += 1
             if not canUseMov(pointer, direction):
                 break
             pointer = nextCoords(pointer, direction)
-        if board[pointer[1]][pointer[0]] == player:
+        if board[pointer[0]][pointer[1]] == player:
             return cellNumb
     return 0
 
@@ -82,7 +82,19 @@ def checkPossibleMoves(player):
                         break
     return possibleMoves
 
-def gameOver():
+def updateBoard(coords, player):
+    if board[coords[0]][coords[1]] == 0:
+        for direction in MOVEMENTS:
+            cellNumb = countSurroundingCell(player, coords, direction)
+            if cellNumb > 0:
+                board[coords[0]][coords[1]] = player
+                pointer = nextCoords(coords, direction)
+                for _ in range(cellNumb):
+                    board[pointer[0]][pointer[1]] = player
+                    pointer = nextCoords(pointer, direction)
+                 
+
+def handelGameOver():
     count = cellCount()
     if count[1] > count[2]:
         print(f"le joueur 1 a gagné")
@@ -92,29 +104,28 @@ def gameOver():
         print(f"equality")
 
 
-def renderer():
+def renderer(player, possibleMoves, cellNumb):
     clearScreen()
     print("   A  B  C  D  E  F  G  H")
     for colIndex in range(8):
         print(colIndex+1, end="")
         colIndex += 1
         for rowIndex in range(8):
-            if board[rowIndex][colIndex-1] == 0:
+            is_possible = possibleMoves
+            if (rowIndex,colIndex-1) in is_possible:
+                print(" ", Fore.BLUE+"■"+Fore.RESET, end='')
+            elif board[rowIndex][colIndex-1] == 0:
                 print(" ", Fore.GREEN+"■"+Fore.RESET, end='')
             elif board[rowIndex][colIndex-1] == 1:
                 print(" ", Fore.WHITE+"■"+Fore.RESET, end="")
             elif board[rowIndex][colIndex-1] == 2:
                 print(" ", Fore.BLACK+"■"+Fore.RESET, end="")
         print("\r")
-    coords = getInput()
+    print(f"white : {cellNumb[1]} | black : {cellNumb[2]} | total : {cellNumb['total']}/64")
+    print(f"It's player {player}'s turn")
+    coords = getInput(player)
     return coords
 
 def clearScreen():
     system('cls' if os_name == 'nt' else 'clear')
-
-renderer()
-
-
-
-
 
