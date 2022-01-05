@@ -23,4 +23,3 @@ while not gameOver:
         coords = function.renderer(player, possibleMoves, cellNumb)
         function.updateBoard(coords, player)
         player = function.getOtherPlayer(player)
-        
