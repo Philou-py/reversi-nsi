@@ -1,9 +1,12 @@
-from asciimatics.effects import Cycle, Print
+from asciimatics.effects import Cycle, Print, BannerText
 from asciimatics.renderers import FigletText
 from asciimatics.scene import Scene
 from asciimatics.screen import Screen
+from asciimatics.screen import ManagedScreen
+from time import sleep
 
-def demo(screen):
+
+def loadingScreen(screen):
     effects = [
             Cycle(
                 screen,
@@ -12,12 +15,22 @@ def demo(screen):
             Print(
                 screen,
                 FigletText("MADE BY DIEGO", font="Graceful"),
-                int(screen.height / 2 +13)
-                )
-                        ]
-    screen.play([Scene(effects, 500)])
+                int(screen.height / 2 +5)
+                ),
+            BannerText(
+                screen,
+                FigletText("Press [q] to start", font="Mini"),
+                int(screen.height / 2 + 13),
+                1
+                )]
+    screen.play([Scene(effects, 500, True)])
+    ev = screen.get_key()
+    if ev in (ord('Q'), ord('q')):
+        return
+    screen.refresh()
 
-Screen.wrapper(demo)
+def launch():
+    Screen.wrapper(loadingScreen)
 
 #BannerText(
 #                screen,
