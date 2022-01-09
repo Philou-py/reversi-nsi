@@ -104,7 +104,7 @@ def getOtherPlayer(player):
     Function: change the player
 
     Input: 
-        -'player' the current player
+        -'player' the current player number
 
     Returns: an int which is the number of the other player
 
@@ -116,7 +116,7 @@ def getOtherPlayer(player):
 
 def nextCoords(coords, direction):
     """""
-    Function:
+    Function: apply a displacement to a cell
 
     Input:
         -'coords' the coordinates of a cell
@@ -155,13 +155,16 @@ def countSurroundingCell(player, coords, direction):
 
 def checkPossibleMoves(player):
     """""
-    Function:
+    Function: returns the different cells on which the player can place his pawn
 
     Input:
+        -'player' the current player number
 
-    Returns:
+    Returns: a Bidimensional list containing coordinates
 
     Local variables:
+        -'possibleMoves' the list who contains the coordinates
+        -'surroundingCell' 
     """""
     possibleMoves = []
     for xIndex in range(8):
@@ -177,11 +180,13 @@ def checkPossibleMoves(player):
 
 def updateBoard(coords, player):
     """""
-    Function:
+    Function: change the value of cells whose color must be changed
 
     Input:
+        -'coords'
+        -'player' the current player number
 
-    Returns:
+    Returns: none.
 
     Local variables:
     """""
@@ -198,26 +203,29 @@ def updateBoard(coords, player):
 
 def handelGameOver():
     """""
-    Function:
+    Function: Display the player who won the game or tie if it is a tie
 
-    Input:
+    Input: none.
 
-    Returns:
+    Returns: none.
 
     Local variables:
+        -'count' stores the cell number of each player (see cellCount)
     """""
     count = cellCount()
     if count[1] > count[2]:
-        print(f"le joueur 1 a gagné")
+        print(f"Player 1 won")
     if count[1] < count[2]:
-        print(f"le joueur 2 a gagné")
+        print(f"Player 2 won")
     else:
-        print(f"equality")
+        print(f"Tie")
 
 
 def renderer(player, possibleMoves, cellNumb):
     """""
-    Function:
+    Function: Display all the information needed for the game(the board,
+    the player who must play, the number of cells of each player,
+    the input for enter the coordinatesr)
 
     Input:
 
