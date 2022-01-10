@@ -4,6 +4,7 @@ import shutil, os
 from time import sleep
 from os import system
 import os
+import time
 
 #displays the loading screen
 loadingscreen.launch()
@@ -26,7 +27,7 @@ while not gameOver:
 
     if cellNumb["total"] == 64:
         # Mark the game as over if all the cell are filed
-        game_over = True
+        gameOver = True
 
         # Handle the end of the game to print out the winner and statistics
         function.handelGameOver()
@@ -39,4 +40,5 @@ while not gameOver:
         function.updateBoard(coords, player)
         player = function.getOtherPlayer(player)
 
+time.sleep(4)
 system("mode con:cols=150 lines=80")
