@@ -24,10 +24,7 @@ def loadingScreen(screen):
                 1
                 )]
     screen.play([Scene(effects, 500, True)])
-    ev = screen.get_key()
-    if ev in (ord('Q'), ord('q')):
-        return
-    screen.refresh()
+    return
 
 def launch():
     Screen.wrapper(loadingScreen)
