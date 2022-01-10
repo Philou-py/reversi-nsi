@@ -1,6 +1,7 @@
 from colorama import init, Fore
 from os import system, name as os_name
 from typing import Literal
+import datetime
 import os
 
 #Initialise the `colorama` library to apply properly the colours in the future
@@ -40,7 +41,7 @@ def indexFinder(char: str):
         if char == column[i]:
             return i+1
 
-def getInput(player):
+def getInput(player, possibleMoves):
     """""
     Function: take player input and check if they are valid
 
@@ -61,6 +62,9 @@ def getInput(player):
         1 <= int(rowInput[1]) <= 8):
         rowInput = input("Enter the coordinates (exemple: B3) : ").upper()
     coords = (ord(rowInput[0]) - ord("A"), int(rowInput[1]) - 1)
+    if coords not in checkPossibleMoves(player):
+        print(Fore.RED + "You cannot place a pawn here!" + Fore.RESET)
+        return getInput(player, possibleMoves)
     return coords
 
 def cellCount():
@@ -215,10 +219,11 @@ def handelGameOver():
     count = cellCount()
     if count[1] > count[2]:
         print(f"Player 1 won")
-    if count[1] < count[2]:
+    elif count[1] < count[2]:
         print(f"Player 2 won")
     else:
         print(f"Tie")
+    saveScore(count)
 
 
 def renderer(player, possibleMoves, cellNumb):
@@ -251,17 +256,34 @@ def renderer(player, possibleMoves, cellNumb):
         print("\r")
     print(f"white : {cellNumb[1]} | black : {cellNumb[2]} | total : {cellNumb['total']}/64")
     print(f"It's player {player}'s turn")
-    coords = getInput(player)
+    coords = getInput(player, checkPossibleMoves(player))
     return coords
 
 def clearScreen():
     """""
-    Function:
+    Function: erases terminal screen (regardless of the OS).
 
-    Input:
+    Input: none.
 
-    Returns:
+    Returns: none
 
-    Local variables:
+    Local variables: none.
     """""
     system('cls' if os_name == 'nt' else 'clear')
+
+def saveScore(count):
+    """""
+    Function: write the scores to a file with a timestamp
+
+    input:
+        -'count' a dictionary containing the scores
+
+    Returns: none.
+
+    Local variables: none.
+    """""
+    s = open("score.csv", 'at')
+    s.write(f"{datetime.datetime.now()}\nplayer_1;{count[1]}\nplayer_2;{count[2]}\n")
+    s.close()
+
+
