@@ -4,6 +4,8 @@ REVERSI is a simple reversi game in the command prompt coded in python
 
 Installation
 -------
+Before you start make sure git for command prompt is installed. You can verify it by typing git in a console. If git is not installed on your machine, you can find installation instructions [here](https://github.com/git-guides/install-git#:~:text=To%20install%20Git,%20navigate%20to,installation%20by%20typing:%20git%20version%20.).
+
 <h3>By cloning the repository</h3>
 
 Firstly clone the repository by copying this command into a command prompt.
