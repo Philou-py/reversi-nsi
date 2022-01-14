@@ -27,7 +27,6 @@ Download the archive and extract it with a tool like winRAR or 7zip. Open a comm
 pip install -r requierments.txt
 ```
 
-
 It's good you are ready to play :)
 
 Usage
