@@ -1,6 +1,6 @@
 ﻿REVERSI
 =======
-REVERSI is a simple reversi game in the command prompt coded in python
+REVERSI is a basic reversi game in the command prompt coded in python
 
 Installation
 -------
