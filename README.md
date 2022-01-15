@@ -1,4 +1,4 @@
-https://img.shields.io/github/last-commit/Philou-py/reversi-nsi/main2?style=flat-square
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Philou-py/reversi-nsi/main2?style=flat-square)
 
 REVERSI
 =======
