@@ -1,4 +1,5 @@
-﻿https://img.shields.io/aur/last-modified/reversi-nsi?style=plastic
+![GitHub last commit](https://img.shields.io/github/last-commit/invader137/reversi-nsi?style=for-the-badge)
+
 REVERSI
 =======
 REVERSI is a simple reversi game in the command prompt coded in python.
