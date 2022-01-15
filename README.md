@@ -1,4 +1,4 @@
-![GitHub last commit](https://img.shields.io/github/last-commit/invader137/reversi-nsi?style=for-the-badge)
+https://img.shields.io/github/last-commit/Philou-py/reversi-nsi/main2?style=flat-square
 
 REVERSI
 =======
