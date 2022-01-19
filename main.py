@@ -1,7 +1,9 @@
-from os import system, name as os_name
+from os import system, name as os_name, get_terminal_size
 from colorama import init, Fore, Back
 from typing import Literal
 from copy import deepcopy
+from csv import reader, writer
+from datetime import datetime
 
 # The command string to clear the screen according to the operating system
 CLEAR_CMD = 'cls' if os_name == 'nt' else 'clear'
@@ -532,6 +534,172 @@ def get_computer_move(possible_moves: list[CoordsType], board: BoardType) -> Coo
     # Find the move with the best score and return it
     return possible_moves[scores.index(max(scores))]
 
+def show_table(table: list[list[str | datetime | int]], last_game_id: int = -1) -> None:
+    """
+    Function: prints out a table of scores for a particular player containing rows corresponding
+    to the following fields: the ID of the game, the opponent, the date / time, whether the game was
+    won, the number of pieces of the player and the number of opponent pieces.
+
+    Input:
+        - `table` (`list[list[str | datetime | int]]`): a bi-dimensional list containing the results
+          of games meant to the viewed by one specific player
+        - `last_game_id` (`int`; optional): the ID of the last game played so that the results get highlighted
+
+    Returns: None
+
+    Local variables:
+        - `FIELD_NAMES` (`list[str]`): the list containing the header of the table
+        - `SEP_FORMAT` (`str`): an arbitrarily formatted template string to format a line of seperators
+        - `ROW_FORMAT` (`str`): an arbitrarily formatted template string to format a row of the table
+        - `row` (`list[str | datetime | int]`): one element of the `table` parameter (iteratively)
+          representing the results of one game
+        - `colour` (`str`): a string containing a colour for a row if it corresponds to the last game played
+    """
+    FIELD_NAMES: list[str] = ["#", "Adversaire", "Date / heure", "Gagnée", "Pions J", "Pions Adv"]
+
+    # Setting a given length for each column of the table is required
+    # See: https://docs.python.org/3/library/string.html#format-specification-mini-language
+    SEP_FORMAT: str = "+{:-^5}+{:-^16}+{:-^25}+{:-^10}+{:-^11}+{:-^11}+"
+    ROW_FORMAT: str = "|{:^5}|{:^16}|{:^25}|{:^10}|{:^11}|{:^11}|"
+
+    print(SEP_FORMAT.format(*([""] * 6)))
+    # Print the table header
+    print(ROW_FORMAT.format(*FIELD_NAMES))
+    print(SEP_FORMAT.format(*([""] * 6)))
+
+    for row in table:
+        colour: str = ""
+        if row[0] == last_game_id:
+            # Colour the row if it corresponds to the last game played
+            colour = Fore.LIGHTCYAN_EX
+
+        print(colour + ROW_FORMAT.format(*row) + (Fore.RESET + Fore.CYAN if colour else ""))
+
+    print(SEP_FORMAT.format(*([""] * 6)))
+
+def show_stats(player_name: str) -> None:
+    """
+    Function: read the `scores.csv` file, filter and sort the data in order to show the results
+    and rank the games played by a particular player.
+
+    Input:
+        - `player_name` (`str`): the name / username of a player
+
+    Returns: None
+
+    Local variables:
+        - `file` (`TextIOWrapper`): the `scores.csv` file opened with the UTF-8 encoding
+        - `csv_reader` (`_reader`): a reader to parse CSV files
+        - `parsed_scores` (`list[list[str | datetime | int]]`): a bi-dimensional list containing the
+          results of the games played by `player_name`
+        - `counter` (`int`): a counter to give an ID to each game
+        - `row` (`list[str]`): the list containing the data of the results of one game (iteratively)
+        - `last_game_id` (`int`): the ID of the last game played
+    """
+    # Open the scores file and create a reader to read the CSV data
+    # Setting the newline argument to "" is recommended
+    file = open("scores.csv", encoding="UTF-8", newline="")
+    csv_reader = reader(file)
+
+    parsed_scores = []
+    counter: int = 0
+    for row in csv_reader:
+        # Skip the first line as it contains only the headers
+        # Only add the line to the scores if it concerns the player requested
+        if counter != 0 and (row[0] == player_name or row[1] == player_name):
+            parsed_scores.append([
+                counter, row[1] if row[0] == player_name else row[0],
+                datetime.fromisoformat(row[2]).strftime("%d/%m/%Y à %X"),
+                "Oui" if row[3] == player_name else ("Egalité" if row[3] == "OX" else "Non"),
+                int(row[4]) if row[0] == player_name else int(row[5]),
+                int(row[5]) if row[0] == player_name else int(row[4])
+            ])
+        counter += 1
+
+    # The last game played corresponds to the last line of the list
+    last_game_id: int = parsed_scores[-1][0]
+
+    # Sort the results from highest to lowest score
+    parsed_scores.sort(key=lambda line: line[4], reverse=True)
+
+    print(Fore.GREEN +\
+        f"\nClassement de la partie comparée aux autres réalisées par le joueur {player_name} :"\
+        + Fore.RESET)
+    print(Fore.CYAN, end="")
+    show_table(parsed_scores, last_game_id)
+    print(Fore.RESET, end="")
+
+
+def save_results(winner: PlayerSymbolType | Literal["OX"], o_pieces: int, x_pieces: int) -> None:
+    """
+    Function: ask the user for the names of the player(s) and save the results of a game to the
+    `scores.csv` file.
+
+    Input:
+        - `winner` (`Literal["O", "X", "OX"]`): the symbol of the player, or "OX" if it was a tie
+        - `o_pieces` (`int`): the number of pieces of the O player
+        - `x_pieces` (`int`): the number of pieces of the X player
+
+    Returns: None
+
+    Local variables:
+        - `file` (`TextIOWrapper`): the `scores.csv` file opened with the UTF-8 encoding in `append` mode
+        - `csv_write` (`_writer`): a writer to write into the file
+        - `o_player_name` (`str`): the name or username of the O player (should not contain `,` because it
+          is the separator of the CSV file)
+        - `x_player_name` (`str`): the name or username of the X player (should not contain `,` because it
+          is the separator of the CSV file)
+        - `date_time` (`str`): the date and time of the game in ISO format (obtained thanks to the datetime
+          library)
+    """
+    # Open the file in `append` mode to save the results in a new line at the bottom of the file
+    # Setting the newline argument to "" is the recommended behaviour
+    file = open("scores.csv", "a", encoding="UTF-8", newline="")
+    csv_writer = writer(file)
+
+    print(Fore.YELLOW)
+
+    # Ask the name of the player to attach it to the results of the game
+    o_player_name: str = input("Entrez le nom du joueur O : ")
+
+    # Limit the name's length to 16 characters (for display purposes)
+    while (not 0 < len(o_player_name) <= 16) or "," in o_player_name or o_player_name == "Computer":
+        o_player_name = input("Entrez le nom du joueur O (longueur maximale : 16 caractères ; \",\" \
+            non autorisé) : ")
+
+    x_player_name: str = input("Entrez le nom du joueur X : ") if not against_ai else "Computer"
+
+    if not against_ai:
+        # Limit the name's length to 16 characters (for display purposes)
+        while (not 0 < len(x_player_name) <= 16) or "," in x_player_name or x_player_name == "Computer":
+            x_player_name = input("Entrez le nom du joueur X (longueur maximale : 16 caractères ; \",\" \
+                non autorisé) : ")
+
+    # Record a timestamp of the end of the game and store it in ISO format
+    date_time: str = datetime.now().isoformat()
+
+    # Write data to the CSV file
+    csv_writer.writerow([
+        o_player_name, x_player_name, date_time,
+        o_player_name if winner == "O" else ("OX" if winner == "OX" else x_player_name),
+        o_pieces, x_pieces
+    ])
+
+    file.close()
+    print("Les résultats ont bien été enregistrés !")
+
+    print(Fore.RESET, end="")
+
+    # When saving results, show also the ranking of the game in comparison to the other games
+    if winner == "O" or winner == "OX":
+        show_stats(o_player_name)
+        if not against_ai:
+            show_stats(x_player_name)
+    else:
+        if not against_ai:
+            show_stats(x_player_name)
+        show_stats(o_player_name)
+
 
 def handle_game_over(pieces_count: PiecesCountType, last_move: CoordsType) -> None:
     """
@@ -543,24 +711,58 @@ def handle_game_over(pieces_count: PiecesCountType, last_move: CoordsType) -> No
 
     Returns: None
 
-    No local variables
+    Local variables:
+        - `should_save_results_str` (`str`): a string input by the user to determine whether to save
+          the results or not
+        - `should_save_results` (`bool`): a boolean set to True if the user wanted to save the results
     """
     print_game([], last_move)
+
+    print(Fore.GREEN)
+
     if pieces_count["O"] > pieces_count["X"]:
+        winner = "O"
         print(f"Le joueur O a gagné avec {pieces_count['O']} pions contre {pieces_count['X']} !")
 
     elif pieces_count["X"] > pieces_count["O"]:
+        winner = "X"
         print(f"Le joueur X a gagné avec {pieces_count['X']} pions contre {pieces_count['O']} !")
 
     else:
+        winner = "OX"
         print(f"Egalité ! Les deux joueurs avaient tous les deux {pieces_count['O']} pions !")
+
+    print(Fore.RESET)
+
+    print(Fore.YELLOW)
+    should_save_results_str = input("Souhaitez-vous enregistrer les résultats de cette partie ? ").lower()
+    while should_save_results_str != "oui" and should_save_results_str != "non":
+        should_save_results_str = input("Souhaitez-vous enregistrer les résultats de cette partie ? \
+(oui / non) ").lower()
+    print(Fore.RESET, end="")
+
+    should_save_results = should_save_results_str == "oui"
+    if should_save_results: save_results(winner, pieces_count["O"], pieces_count["X"])
 
 
 # Don't start the game when importing a function from this module
 if __name__ == "__main__":
-
     # Initialise the `colorama` library to apply properly the colours in the future
     init()
+
+    # Terminal size check
+    terminal_size = get_terminal_size()
+    if terminal_size.columns < 100:
+        print(Fore.RED)
+        print("Votre terminal n'est pas assez large pour le bon affichage de ce programme !")
+        print("Une largeur minimale de 100 caractères est recommandée !\n")
+        print(Fore.RESET)
+        input("Appuyez sur la touche Entrée pour continuer. ")
+
+    if terminal_size.lines < 25:
+        print(Fore.RED + "Une hauteur de terminal de 25 caractères est recommandée pour le bon \
+affichage de ce programme !\n" + Fore.RESET)
+        input("Appuyez sur la touche Entrée pour continuer. ")
 
     # Keep track of the state of the game (gets updated to `True` when all squares have been filled)
     game_over: bool = False
@@ -593,28 +795,31 @@ Voici les règles du jeu :
 Chaque joueur dispose de pions marqués soit d'un O, soit d'un X qu'il peut placer,
 à chaque tour, sur l'une des 64 cases du plateau de jeu. A son tour de jeu, le joueur
 doit poser un pion de sa couleur sur une case vide, adjacente à un pion adverse
-(prenant en compte les directions horizontale, verticale et diagonale) et tel qu'il retourne
-au moins un pion adverse en les encadrant dans l'une ou plusieurs des directions.
+(prenant en compte les directions horizontale, verticale et diagonale) et tel qu'il
+retourne au moins un pion adverse en les encadrant dans l'une ou plusieurs des directions.
 
-La partie se termine lorsqu'aucun joueur ne peut plus poser de pion qui causerait un retournement,
-ce qui arrive le plus souvent lorsque les 64 cases sont remplies, mais ce qui peut également
-se produire lorsque l'un des joueurs ne possède plus de pion sur le plateau.
+La partie se termine lorsqu'aucun joueur ne peut plus poser de pion qui causerait un
+retournement, ce qui arrive le plus souvent lorsque les 64 cases sont remplies, mais
+ce qui peut également se produire lorsque l'un des joueurs ne possède plus de pion sur
+le plateau.
 
-Le joueur gagnant est celui qui possède le plus de pions de sa couleur sur le plateau à la fin de la partie.
+Le joueur gagnant est celui qui possède le plus de pions de sa couleur sur le plateau à la
+fin de la partie.
 
-Sur le plateau de jeu, les cases vides sont symbolisées par un tiret bleu. Si cette case représente
-une possibilité de jeu pour le joueur actif, celle-ci est de couleur jaune clair / blanc. Les cases
-possédant un fond violet ou rouge indiquent la case dans laquelle le joueur précédent a placé un pion.
+Sur le plateau de jeu, les cases vides sont symbolisées par un tiret bleu. Si cette case
+représente une possibilité de jeu pour le joueur actif, celle-ci est de couleur jaune clair / blanc.
+Les cases possédant un fond violet ou rouge indiquent la case dans laquelle le joueur précédent a
+placé un pion.
     """, Fore.RESET)
 
     print(Fore.CYAN)
 
     # Make the user choose the game mode
-    against_ai_input: str = input("Souhaitez-vous jouer contre l'ordinateur ? (oui/non) ").lower()
+    against_ai_input: str = input("Souhaitez-vous jouer contre l'ordinateur ? (oui / non) ").lower()
 
     # Re-ask while the input is incorrect
     while against_ai_input != "oui" and against_ai_input != "non":
-        against_ai_input = input("Souhaitez-vous jouer contre l'ordinateur ? (oui/non) ").lower()
+        against_ai_input = input("Souhaitez-vous jouer contre l'ordinateur ? (oui / non) ").lower()
 
     against_ai: bool = against_ai_input == "oui"
 
@@ -625,6 +830,9 @@ possédant un fond violet ou rouge indiquent la case dans laquelle le joueur pr�
 
     print(Fore.RESET)
     print(Fore.RED + "Bon jeu !" + Fore.RESET)
+
+    # save_results("X", 41, 23)
+    # show_stats("Philippe")
 
     input("\nAppuyez sur la touche Entrée pour commencer le jeu ! ")
 
