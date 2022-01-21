@@ -1,5 +1,9 @@
-from os import system, name as os_name, get_terminal_size
-from colorama import init, Fore, Back
+from os import system, name as os_name, get_terminal_size, path
+try:
+    from colorama import init, Fore, Back
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Veuillez installer les dépendances de l'application à l'aide de la commande \
+suivante : pip install -r requirements.txt") from None
 from typing import Literal
 from copy import deepcopy
 from csv import reader, writer
@@ -27,8 +31,8 @@ WEIGHTING = [
 ]
 
 # Misc types for: coordinates, one movement, the possible player symbols, the possible symbols on the
-# board, and for a statistics dictionary about the number of pieces of each player and the total pieces
-# placed on the board
+# board, a statistics dictionary about the number of pieces of each player and the total pieces
+# placed on the board, and for the variable containing a representation of the board.
 # The coordinates of a square, according to CoordsType are given the following way:
 #     - First vertical position from the top
 #     - Second horizontal position from the left
@@ -456,7 +460,7 @@ def update_board(coords: CoordsType, player_symbol: PlayerSymbolType, board: Boa
 
 def compute_score(player_symbol: PlayerSymbolType, coords: CoordsType, board: BoardType) -> int:
     """
-    Function: computes the score of the given square if `player_symbol` placed a piece on it, thanks
+    Function: computes the score of the given square if the player placed a piece on it, thanks
     to three strategies: positional strategy, stable pieces strategy and a blocking strategy for
     the player after.
 
@@ -534,6 +538,7 @@ def get_computer_move(possible_moves: list[CoordsType], board: BoardType) -> Coo
     # Find the move with the best score and return it
     return possible_moves[scores.index(max(scores))]
 
+
 def show_table(table: list[list[str | datetime | int]], last_game_id: int = -1) -> None:
     """
     Function: prints out a table of scores for a particular player containing rows corresponding
@@ -577,10 +582,11 @@ def show_table(table: list[list[str | datetime | int]], last_game_id: int = -1) 
 
     print(SEP_FORMAT.format(*([""] * 6)))
 
+
 def show_stats(player_name: str) -> None:
     """
-    Function: read the `scores.csv` file, filter and sort the data in order to show the results
-    and rank the games played by a particular player.
+    Function: reads the `scores.csv` file, filter and sort the data in order to show the results
+    and ranks the games played by a particular player.
 
     Input:
         - `player_name` (`str`): the name / username of a player
@@ -616,6 +622,8 @@ def show_stats(player_name: str) -> None:
             ])
         counter += 1
 
+    file.close()
+
     # The last game played corresponds to the last line of the list
     last_game_id: int = parsed_scores[-1][0]
 
@@ -632,7 +640,7 @@ def show_stats(player_name: str) -> None:
 
 def save_results(winner: PlayerSymbolType | Literal["OX"], o_pieces: int, x_pieces: int) -> None:
     """
-    Function: ask the user for the names of the player(s) and save the results of a game to the
+    Function: asks the user for the name(s) of the player(s) and saves the results of a game to the
     `scores.csv` file.
 
     Input:
@@ -652,6 +660,12 @@ def save_results(winner: PlayerSymbolType | Literal["OX"], o_pieces: int, x_piec
         - `date_time` (`str`): the date and time of the game in ISO format (obtained thanks to the datetime
           library)
     """
+    # Check if `scores.csv` exists
+    if not path.isfile("./scores.csv"):
+        file = open("scores.csv", "w", encoding="UTF-8", newline="")
+        file.write("o_player_name,x_player_name,date_time,winner,o_pieces_nb,x_pieces_nb\n")
+        file.close()
+
     # Open the file in `append` mode to save the results in a new line at the bottom of the file
     # Setting the newline argument to "" is the recommended behaviour
     file = open("scores.csv", "a", encoding="UTF-8", newline="")
@@ -703,7 +717,8 @@ def save_results(winner: PlayerSymbolType | Literal["OX"], o_pieces: int, x_piec
 
 def handle_game_over(pieces_count: PiecesCountType, last_move: CoordsType) -> None:
     """
-    Function: handles the end of a game and logs the winner and statistics to the console.
+    Function: handles the end of a game, prints out the winner and statistics and compares the game to
+    the others saved in the `scores.csv` file.
 
     Input:
         - `pieces_count` (`int`): a dictionary containing the number of pieces of each player and the total pieces
@@ -735,10 +750,12 @@ def handle_game_over(pieces_count: PiecesCountType, last_move: CoordsType) -> No
     print(Fore.RESET)
 
     print(Fore.YELLOW)
+
     should_save_results_str = input("Souhaitez-vous enregistrer les résultats de cette partie ? ").lower()
     while should_save_results_str != "oui" and should_save_results_str != "non":
         should_save_results_str = input("Souhaitez-vous enregistrer les résultats de cette partie ? \
 (oui / non) ").lower()
+
     print(Fore.RESET, end="")
 
     should_save_results = should_save_results_str == "oui"
