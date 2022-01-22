@@ -9,10 +9,6 @@ import time
 #displays the loading screen
 loadingscreen.launch()
 
-
-#
-system("mode con:cols=150 lines=80")
-
 #set the current player to one
 player = 1
 
@@ -32,6 +28,8 @@ while not gameOver:
 
         # Handle the end of the game to print out the winner and statistics
         function.handelGameOver()
+        time.sleep(3)
+        function.saveScore(cellNumb)
     else:
         if len(possibleMoves) == 0:
             # The current player cannot play, so pass their turn
@@ -42,4 +40,4 @@ while not gameOver:
         player = function.getOtherPlayer(player)
 
 time.sleep(4)
-system("mode con:cols=150 lines=80")
+

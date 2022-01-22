@@ -282,9 +282,14 @@ def saveScore(count):
 
     Local variables: none.
     """""
-    s = open("score.csv", 'at')
-    s.write(f"{datetime.datetime.now()}\nplayer_1;{count[1]}\nplayer_2;{count[2]}\n")
-    s.close()
-
-
-
+    saveAnswer = input("Do you want to save your party? ")
+    while saveAnswer != "yes" or "y" or "YES" or "Yes" or "no" or "No" or "NO":
+        saveAnswer = input("Answer can only be 'yes' or 'no'")
+    if saveAnswer == "yes" or "y" or "YES" or "Yes":
+        player1Name = input("Enter the player 1 name")
+        player2Name = input("Enter the player 2 name")
+        s = open("scores.csv", 'at')
+        s.write(f"{datetime.datetime.now()},{player1Name},{count[1]},{player2Name},{count[2]}\n")
+        s.close()
+    elif saveAnswer == "no" or "No" or "NO":
+        pass
