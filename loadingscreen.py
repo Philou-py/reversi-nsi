@@ -29,8 +29,3 @@ def loadingScreen(screen):
 def launch():
     Screen.wrapper(loadingScreen)
 
-#BannerText(
-#                screen,
-#                FigletText("made by diego", font="Graceful"),
-#                int(screen.height / 2 + 3),
-#                3)
