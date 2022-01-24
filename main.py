@@ -286,6 +286,8 @@ def get_closest_other_piece(
     # Keep track of the position of the pointer when it reaches the edges of the board
     is_off_limits: bool = False
 
+    pointer = (-1, -1)
+
     # First check if the pointer can be moved in the given direction
     if can_use_mov(coords, direction):
         pointer: CoordsType = update_coords(coords, direction)
