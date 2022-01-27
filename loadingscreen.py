@@ -2,8 +2,6 @@ from asciimatics.effects import Cycle, Print, BannerText
 from asciimatics.renderers import FigletText
 from asciimatics.scene import Scene
 from asciimatics.screen import Screen
-from asciimatics.screen import ManagedScreen
-from time import sleep
 
 
 def loadingScreen(screen):

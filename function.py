@@ -2,7 +2,7 @@ from colorama import init, Fore
 from os import system, name as os_name
 from typing import Literal
 import datetime
-import os
+
 
 #Initialise the `colorama` library to apply properly the colours in the future
 init()
